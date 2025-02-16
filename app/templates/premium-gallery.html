@@ -1,0 +1,925 @@
+{% extends "base.html" %}
+
+{% block title %}MemoryBot - Gallery{% endblock %}
+
+{% block extra_css %}
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        }
+
+        .photo-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+    .gallery-grid {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .gallery-grid.loaded {
+            opacity: 1;
+        }
+
+        .photo-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+
+    .photo-card:hover .photo-overlay {
+        opacity: 1;
+    }
+
+        .filter-button.active {
+            background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        color: rgb(44, 37, 37);
+    }
+
+    .searchInput {
+        background: rgba(113, 44, 44, 0.05);
+        background-color: rgb(0 0 0);
+    }
+
+    /* Make input text black */
+    input,
+    textarea {
+        color: black !important; /* Ensures user-entered text is visible */
+        background-color: rgba(255, 255, 255, 0.9); /* Light background for contrast */
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+
+    /* Ensure labels are visible */
+    label {
+        color: #FF6B6B !important;
+    }
+
+    /* Make input text black */
+
+    .upload-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* Ensures proper spacing on smaller screens */
+}
+
+    .upload-modal.active {
+        display: flex;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1); /* Slightly transparent glass effect */
+        border-radius: 12px;
+        padding: 20px;
+        width: 90%; /* Increase width */
+        max-width: 650px; /* Adjust width to be wider */
+        max-height: 90vh; /* Ensures it never exceeds 90% of viewport height */
+        overflow-y: auto; /* Enables scrolling if needed */
+    }
+
+    textarea {
+        min-height: 80px; /* Prevents excessive growth */
+        max-height: 150px;
+    }
+
+    .upload-modal.active {
+        display: flex;
+    }
+
+    .drag-area {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .drag-area.active {
+        border-color: #FF3366;
+        background: rgba(255, 51, 102, 0.1);
+        }
+
+    .filter-pill.has-favorites {
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+    }
+    
+    .favorite-icon.is-favorite {
+        fill: currentColor;
+    }
+
+    .favorite-btn[data-favorite="true"] svg {
+        fill: #FF3366;
+        stroke: #FF3366;
+    }
+
+    .favorite-btn[data-favorite="false"]:hover svg {
+        fill: rgba(255, 51, 102, 0.5);
+    }
+    .text-gray-100 {
+        --tw-text-opacity: 1;
+        color: rgb(0 0 0);
+}
+
+    .search-bar {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+    }
+
+    .filter-pill.has-favorites {
+        background: linear-gradient(45deg, #FF3366, #FF6B6B) !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    .favorite-btn[data-favorite="true"] svg {
+        fill: #FF3366;
+        stroke: #FF3366;
+    }
+
+    #favoritesCount {
+        background: rgba(255, 51, 102, 0.2);
+        color: #FF3366;
+    }
+
+    .filter-pill {
+        transition: all 0.3s ease;
+    }
+
+    .filter-pill.active {
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        color: white;
+        border: none;
+    }
+
+    .filter-pill:not(.active) {
+        background: #1a1b23;
+        border: 1px solid #374151;
+    }
+
+    .loading-spinner {
+        @apply animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full mx-auto;
+    }
+
+    .error-message {
+        @apply text-red-500 mb-2 font-medium;
+    }
+
+    .no-results {
+        @apply text-gray-400 text-center py-20;
+    }
+
+    /* Add relevance indicator styles */
+    .grid > div {
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .grid > div:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .border-green-500 {
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+
+    .border-yellow-500 {
+        box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
+    }
+
+    .border-red-500 {
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#030307]">
+    <!-- Main Content Area - Starts after fixed navbar -->
+    <div class="pt-24"> <!-- Increased padding-top to clear the navbar -->
+        <!-- Search Section -->
+        <div class="w-full bg-[#030307] py-8 mb-6">
+            <div class="max-w-7xl mx-auto px-6">
+                <form id="searchForm" class="relative" onsubmit="handleSearch(event)" autocomplete="off">
+                    <input type="text" 
+                        id="searchInput"
+                        name="query"
+                        placeholder="Search using natural language" 
+                        class="w-full px-6 py-4 rounded-xl search-bar text-white placeholder-gray-500 
+                               focus:outline-none focus:ring-2 focus:ring-pink-500 font-medium
+                               bg-opacity-5 bg-white">
+                    <button type="submit" class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <svg class="w-5 h-5 text-gray-400 hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+            <!-- Filter Pills -->
+        <div class="w-full border-t border-gray-800">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex space-x-4 overflow-x-auto custom-scrollbar">
+                    <button onclick="filterGallery('all')" 
+                            data-filter="all"
+                            class="filter-pill px-5 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-pink-500 to-red-500 
+                                   text-white whitespace-nowrap flex-shrink-0">
+                    All Photos
+                </button>
+                    <button onclick="filterGallery('favorites')"
+                            data-filter="favorites"
+                            class="filter-pill px-5 py-2 rounded-full text-sm font-medium bg-[#1a1b23] text-gray-300 
+                                   border border-gray-700 whitespace-nowrap flex-shrink-0 hover:text-white">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                    Favorites
+                            <span id="favoritesCount" class="ml-2 px-2 py-0.5 text-xs bg-pink-500/20 rounded-full hidden"></span>
+                        </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Grid -->
+        <div class="container mx-auto px-4 py-8">
+            <!-- Fixed 3-Column Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            {% for image in images %}
+                <div class="aspect-[4/3] relative group rounded-lg overflow-hidden" data-image-id="{{ image.filename }}">
+                    <!-- Make the image clickable -->
+                    <a href="/image/{{ image.filename }}" class="block h-full">
+                        <img src="/images/{{ image.filename }}" 
+                             alt="{{ image.metadata.description }}"
+                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        
+                        <!-- Hover Overlay with Vignette -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent 
+                                  opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <!-- Top Actions -->
+                            <div class="absolute top-4 right-4 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                <button onclick="toggleFavorite('{{ image.filename }}')" 
+                                        class="p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors favorite-btn"
+                                        data-favorite="false">
+                                    <svg class="w-5 h-5 text-white transition-colors duration-300" 
+                                         viewBox="0 0 24 24"
+                                         fill="none"
+                                         stroke="currentColor"
+                                         stroke-width="2">
+                                        <path class="heart-path"
+                                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Bottom Info -->
+                            <div class="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 
+                                      group-hover:translate-y-0 transition-transform duration-300">
+                                {% if image.metadata.place and image.metadata.place != "Unknown" %}
+                                <p class="text-white text-sm font-medium mb-2">📍 {{ image.metadata.place }}</p>
+                                {% endif %}
+                                
+                                <div class="flex flex-wrap gap-2">
+                                    {% if image.metadata.event and image.metadata.event != "Unknown" %}
+                                    <span class="px-2 py-1 text-xs bg-black/50 backdrop-blur-sm rounded-full text-white">
+                                        🎉 {{ image.metadata.event }}
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if image.metadata.who and image.metadata.who != "Unknown" %}
+                                    <span class="px-2 py-1 text-xs bg-black/50 backdrop-blur-sm rounded-full text-white">
+                                        👥 {{ image.metadata.who }}
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if image.metadata.year and image.metadata.year != "Unknown" %}
+                                    <span class="px-2 py-1 text-xs bg-black/50 backdrop-blur-sm rounded-full text-white">
+                                        📅 {{ image.metadata.year }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <!-- Keep favorite button outside the link -->
+                    <button onclick="toggleFavorite('{{ image.filename }}')" 
+                            class="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 
+                                   transition-colors favorite-btn opacity-0 group-hover:opacity-100"
+                            data-favorite="false">
+                        <svg class="w-5 h-5 text-white transition-colors duration-300" 
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <path class="heart-path"
+                                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button id="openUpload" 
+            class="fixed bottom-8 right-8 bg-gradient-to-r from-pink-500 to-red-500 p-4 rounded-full 
+                   shadow-lg hover:opacity-90 transition-opacity">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+    </button>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="upload-modal items-center justify-center">
+    <div class="glass-card rounded-2xl p-8 max-w-2xl w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-white">Upload Photos</h2>
+            <button id="closeUpload" class="text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="uploadForm" class="space-y-6">
+            <div class="drag-area rounded-xl p-8 text-center">
+                <input type="file" id="fileInput" class="hidden" multiple accept="image/*">
+                <!-- Image Preview Container -->
+                <div id="imagePreview" class="hidden mb-4">
+                    <img id="previewImg" class="max-h-48 mx-auto rounded-lg object-contain mb-2">
+                    <p id="fileName" class="text-gray-300 text-sm"></p>
+                </div>
+                <!-- Default Upload State -->
+                <div id="uploadState">
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="text-gray-400 mb-2">Drag and drop your photos here or</p>
+                <button type="button" id="browseButton" class="bg-gradient-to-r from-pink-500 to-red-500 text-white px-6 py-2 rounded-lg">
+                    Browse Files
+                </button>
+                </div>
+            </div>
+
+            <!-- Metadata Fields -->
+            <div class="space-y-4">
+                <div>
+                    <label class="text-gray-300 block mb-1">Who's in the photo? (Optional)</label>
+                    <input type="text" name="who" 
+                           class="w-full px-4 py-2 rounded-lg bg-[#1a1b23] text-white border border-gray-700 
+                                  focus:border-pink-500 focus:outline-none placeholder-gray-500">
+                </div>
+                
+                <div>
+                    <label class="text-gray-300 block mb-1">Place (Optional)</label>
+                    <input type="text" name="place" 
+                           class="w-full px-4 py-2 rounded-lg bg-[#1a1b23] text-white border border-gray-700 
+                                  focus:border-pink-500 focus:outline-none placeholder-gray-500">
+                </div>
+                
+                <div>
+                    <label class="text-gray-300 block mb-1">Event (Optional)</label>
+                    <input type="text" name="event" 
+                           class="w-full px-4 py-2 rounded-lg bg-[#1a1b23] text-white border border-gray-700 
+                                  focus:border-pink-500 focus:outline-none placeholder-gray-500">
+                </div>
+                
+                <div>
+                    <label class="text-gray-300 block mb-1">Year (Optional)</label>
+                    <input type="text" name="year" 
+                           class="w-full px-4 py-2 rounded-lg bg-[#1a1b23] text-white border border-gray-700 
+                                  focus:border-pink-500 focus:outline-none placeholder-gray-500">
+                </div>
+                
+                <div>
+                    <label class="text-gray-300 block mb-1">Description (Optional)</label>
+                    <textarea name="description" 
+                            class="w-full px-4 py-2 rounded-lg bg-[#1a1b23] text-white border border-gray-700 
+                                   focus:border-pink-500 focus:outline-none placeholder-gray-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 rounded-lg font-medium">
+                Upload Photos
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+<script>
+    // Initialize Masonry layout
+    window.onload = function() {
+        initMasonry();
+    };
+
+    function initMasonry() {
+        var grid = document.querySelector('.gallery-grid');
+        var masonry = new Masonry(grid, {
+            itemSelector: '.photo-card',
+            columnWidth: '.photo-card',
+            percentPosition: true,
+            gutter: 24
+        });
+        grid.classList.add('loaded');
+    }
+
+    // Add state management
+    let currentSearchResults = null;
+
+    async function handleSearch(event) {
+        event.preventDefault(); // Prevent form submission
+        
+        const searchInput = document.getElementById('searchInput');
+        const query = searchInput.value.trim();
+        
+        if (!query) return;
+        
+        try {
+            // Show loading state
+            const galleryGrid = document.querySelector('.grid');
+            galleryGrid.innerHTML = '<div class="col-span-3 text-center py-20"><div class="loading-spinner"></div><p class="text-gray-400">Searching...</p></div>';
+
+            // Make the search request
+            const response = await fetch(`/api/v1/gallery/search?query=${encodeURIComponent(query)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Search failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Search response:', data);
+            
+            if (data.success) {
+                if (data.rate_limited) {
+                    // Show rate limit warning
+                    const warningHtml = `
+                        <div class="col-span-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-4">
+                            <p class="text-yellow-500 text-sm">
+                                ${data.message}
+                            </p>
+                            <div class="mt-2 text-xs text-yellow-500/70">
+                                Next advanced search available in: ${data.wait_time}s
+                            </div>
+                        </div>
+                    `;
+                    galleryGrid.insertAdjacentHTML('beforebegin', warningHtml);
+                }
+
+                if (data.images && data.images.length > 0) {
+                    // Store the results
+                    currentSearchResults = data.images;
+                    console.log(`Found ${data.images.length} images with scores`);
+                    updateGallery(data.images);
+                    
+                    // Update URL without page reload
+                    const newUrl = new URL(window.location);
+                    newUrl.searchParams.set('query', query);
+                    window.history.pushState({}, '', newUrl);
+                } else {
+                    galleryGrid.innerHTML = '<div class="col-span-3 text-center py-20"><p class="text-gray-400">No images found matching your search</p></div>';
+                }
+            } else {
+                throw new Error(data.message || 'Search failed');
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            const galleryGrid = document.querySelector('.grid');
+            galleryGrid.innerHTML = `
+                <div class="col-span-3 text-center py-20">
+                    <p class="error-message">Search failed</p>
+                    <p class="text-gray-400 text-sm">${error.message}</p>
+                </div>`;
+        }
+    }
+
+    // Handle browser back/forward
+    window.onpopstate = function(event) {
+        if (currentSearchResults) {
+            updateGallery(currentSearchResults);
+        }
+    };
+
+    // Check for search query on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('query');
+        
+        if (query) {
+            document.getElementById('searchInput').value = query;
+            await handleSearch(new Event('submit'));
+        }
+        
+        initializeFavorites();
+        updateFavoritesPill();
+    });
+
+    // Upload functionality
+    const uploadModal = document.getElementById('uploadModal');
+    const openUpload = document.getElementById('openUpload');
+    const closeUpload = document.getElementById('closeUpload');
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const browseButton = document.getElementById('browseButton');
+    const dragArea = document.querySelector('.drag-area');
+
+    // Modal controls
+    openUpload.addEventListener('click', () => uploadModal.classList.add('active'));
+    closeUpload.addEventListener('click', () => {
+        uploadModal.classList.remove('active');
+        uploadForm.reset();
+        document.getElementById('uploadState').classList.remove('hidden');
+        document.getElementById('imagePreview').classList.add('hidden');
+    });
+
+    // File input handling
+    browseButton.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dragArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dragArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dragArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dragArea.classList.add('active');
+    }
+
+    function unhighlight() {
+        dragArea.classList.remove('active');
+    }
+
+    dragArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        selectedFiles = dt.files;
+        
+        if (selectedFiles.length > 0) {
+            const file = selectedFiles[0]; // Show preview of first file
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const uploadState = document.getElementById('uploadState');
+                const imagePreview = document.getElementById('imagePreview');
+                const previewImg = document.getElementById('previewImg');
+                const fileName = document.getElementById('fileName');
+                
+                uploadState.classList.add('hidden');
+                imagePreview.classList.remove('hidden');
+                previewImg.src = e.target.result;
+                fileName.textContent = file.name;
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    let selectedFiles = []; // Store selected files
+
+    // Add image preview functionality
+    fileInput.addEventListener('change', function() {
+        selectedFiles = this.files;
+        if (selectedFiles.length > 0) {
+            const file = selectedFiles[0]; // Show preview of first file
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const uploadState = document.getElementById('uploadState');
+                const imagePreview = document.getElementById('imagePreview');
+                const previewImg = document.getElementById('previewImg');
+                const fileName = document.getElementById('fileName');
+                
+                uploadState.classList.add('hidden');
+                imagePreview.classList.remove('hidden');
+                previewImg.src = e.target.result;
+                fileName.textContent = file.name;
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Form submission
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (selectedFiles.length === 0) {
+            alert('Please select at least one file');
+            return;
+        }
+
+        const totalFiles = selectedFiles.length;
+        let successCount = 0;
+
+        for (let file of selectedFiles) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Add metadata
+            formData.append('who', uploadForm.who.value);
+            formData.append('place', uploadForm.place.value);
+            formData.append('event', uploadForm.event.value);
+            formData.append('year', uploadForm.year.value);
+            formData.append('description', uploadForm.description.value);
+
+            try {
+                const response = await fetch('/api/v1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        console.error('Upload failed:', result.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+            }
+        }
+        
+        // Show result and refresh if any uploads succeeded
+        if (successCount > 0) {
+            alert(`Successfully uploaded ${successCount} of ${totalFiles} files`);
+            location.reload(); // Refresh to show new images
+        } else {
+            alert('Failed to upload files');
+        }
+
+        // Reset form and close modal
+        selectedFiles = []; // Clear selected files
+        uploadForm.reset();
+        uploadModal.classList.remove('active');
+        
+        // Reset drag area to initial state
+        dragArea.innerHTML = `
+            <input type="file" id="fileInput" class="hidden" multiple accept="image/*">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="text-gray-400 mb-2">Drag and drop your photos here or</p>
+            <button type="button" id="browseButton" class="bg-gradient-to-r from-pink-500 to-red-500 text-white px-6 py-2 rounded-lg">
+                Browse Files
+            </button>`;
+        
+        // Reattach click handler to new browse button
+        document.getElementById('browseButton').addEventListener('click', () => fileInput.click());
+    });
+
+    function updateGallery(images) {
+        const galleryGrid = document.querySelector('.grid');
+        
+        if (!images || images.length === 0) {
+            galleryGrid.innerHTML = '<div class="col-span-3 text-center py-20"><p class="text-gray-400">No images found matching your search</p></div>';
+            return;
+        }
+
+        console.log('Updating gallery with images:', images);
+
+        galleryGrid.innerHTML = images.map(image => {
+            // Calculate relevance indicator styles
+            const score = image.score || 0;
+            const relevanceClass = score > 0.7 ? 'border-green-500' : score > 0.4 ? 'border-yellow-500' : 'border-red-500';
+            
+            return `
+                <div class="aspect-[4/3] relative group rounded-lg overflow-hidden" 
+                     data-image-id="${image.filename}"
+                     data-score="${image.score}"
+                     class="transition-all duration-300 border-2 ${relevanceClass}">
+                    <a href="/image/${image.filename}" class="block h-full">
+                        <img src="/images/${image.filename}" 
+                             alt="${image.metadata?.description || ''}"
+                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent 
+                                  opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                ${image.metadata?.place && image.metadata.place !== 'Unknown' ? 
+                                    `<p class="text-white text-sm font-medium mb-1">📍 ${image.metadata.place}</p>` : ''}
+                                
+                                <div class="flex flex-wrap gap-2">
+                                    ${image.metadata?.who && image.metadata.who !== 'Unknown' ? `
+                                        <span class="px-2 py-1 text-xs bg-black/30 backdrop-blur-sm rounded-full text-white">
+                                            👥 ${image.metadata.who}
+                                        </span>
+                                    ` : ''}
+                                    
+                                    ${image.metadata?.event && image.metadata.event !== 'Unknown' ? `
+                                        <span class="px-2 py-1 text-xs bg-black/30 backdrop-blur-sm rounded-full text-white">
+                                            🎉 ${image.metadata.event}
+                                        </span>
+                                    ` : ''}
+                                    
+                                    ${image.metadata?.year && image.metadata.year !== 'Unknown' ? `
+                                        <span class="px-2 py-1 text-xs bg-black/30 backdrop-blur-sm rounded-full text-white">
+                                            📅 ${image.metadata.year}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- Score indicator -->
+                    <div class="absolute top-4 left-4 px-2 py-1 bg-black/50 rounded-full text-xs text-white 
+                              opacity-0 group-hover:opacity-100 transition-opacity">
+                        Match: ${(image.score * 100).toFixed(0)}%
+                    </div>
+                    
+                    <button onclick="toggleFavorite('${image.filename}')" 
+                            class="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 
+                                   transition-colors favorite-btn opacity-0 group-hover:opacity-100"
+                            data-favorite="${favorites.has(image.filename)}">
+                        <svg class="w-5 h-5 text-white transition-colors duration-300" 
+                             viewBox="0 0 24 24"
+                             fill="${favorites.has(image.filename) ? 'currentColor' : 'none'}"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <path class="heart-path"
+                                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+        }).join('');
+        
+        // Reinitialize favorites after gallery update
+        initializeFavorites();
+    }
+
+    // Initialize favorites from localStorage
+    let favorites = new Set(JSON.parse(localStorage.getItem('favorites') || '[]'));
+
+    // Initialize favorite buttons on page load
+    function initializeFavorites() {
+        favorites.forEach(imageId => {
+            const imageCard = document.querySelector(`[data-image-id="${imageId}"]`);
+            if (imageCard) {
+                const favoriteBtn = imageCard.querySelector('.favorite-btn');
+                favoriteBtn.setAttribute('data-favorite', 'true');
+            }
+        });
+    }
+
+    function toggleFavorite(imageId) {
+        const imageCard = document.querySelector(`[data-image-id="${imageId}"]`);
+        const favoriteBtn = imageCard.querySelector('.favorite-btn');
+        const isFavorite = favorites.has(imageId);
+
+        if (isFavorite) {
+            favorites.delete(imageId);
+            favoriteBtn.setAttribute('data-favorite', 'false');
+        } else {
+            favorites.add(imageId);
+            favoriteBtn.setAttribute('data-favorite', 'true');
+        }
+
+        localStorage.setItem('favorites', JSON.stringify([...favorites]));
+        updateFavoritesPill();
+
+        // If we're in favorites view, refresh the view
+        const currentFilter = document.querySelector('.filter-pill.active').dataset.filter;
+        if (currentFilter === 'favorites') {
+            filterGallery('favorites');
+        }
+    }
+
+    function updateFavoritesPill() {
+        const favCount = favorites.size;
+        const countBadge = document.getElementById('favoritesCount');
+        const favoritesPill = document.querySelector('[data-filter="favorites"]');
+        
+        if (favCount > 0) {
+            countBadge.textContent = favCount;
+            countBadge.classList.remove('hidden');
+            favoritesPill.classList.add('has-favorites');
+        } else {
+            countBadge.classList.add('hidden');
+            favoritesPill.classList.remove('has-favorites');
+        }
+    }
+
+    let currentFilter = 'all';
+    
+    function filterGallery(filter) {
+        // Update active state of filter pills
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            const isActive = pill.dataset.filter === filter;
+            
+            if (isActive) {
+                pill.classList.add('active', 'bg-gradient-to-r', 'from-pink-500', 'to-red-500', 'text-white');
+                pill.classList.remove('bg-[#1a1b23]', 'text-gray-300', 'border-gray-700', 'border');
+            } else {
+                pill.classList.remove('active', 'bg-gradient-to-r', 'from-pink-500', 'to-red-500');
+                pill.classList.add('bg-[#1a1b23]', 'text-gray-300', 'border-gray-700', 'border');
+            }
+        });
+
+        // Filter the images
+        const galleryGrid = document.querySelector('.grid');
+        const items = galleryGrid.querySelectorAll('[data-image-id]');
+
+        items.forEach(item => {
+            const imageId = item.dataset.imageId;
+            if (filter === 'all' || (filter === 'favorites' && favorites.has(imageId))) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    }
+
+    // Add these test queries to try
+    const testQueries = [
+        "Show me photos of Ratul in Dhaka",
+        "Beach photos from 2023",
+        "Photos with my friends",
+        "a",  // Should fail validation
+        "   ", // Should fail validation
+        "Show me photos from last summer", // Semantic search
+    ];
+
+    async function runTests() {
+        console.group('Search Tests');
+        for (const query of testQueries) {
+            console.log(`Testing query: "${query}"`);
+            try {
+                const response = await fetch(`/api/v1/gallery/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                console.log('Response:', data);
+                if (!response.ok) {
+                    console.error('Error:', data.detail || data.message);
+                } else {
+                    console.log(`Found ${data.total} results`);
+                    console.log('Query understanding:', data.query_understanding);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+            console.log('---');
+        }
+        console.groupEnd();
+    }
+    </script>
+{% endblock %}

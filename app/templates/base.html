@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', path='favicon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', path='favicon/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ url_for('static', path='favicon/site.webmanifest') }}">
+    <title>{% block title %}MemoryBot{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', path='css/shared.css') }}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-[#030307]">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-[#030307] border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo Section -->
+                <a href="/" class="flex items-center space-x-3 logo-container">
+                    <div class="w-12 h-12 bg-gradient-to-r from-pink-500 to-red-500 rounded-xl flex items-center justify-center">
+                        <span class="text-white text-xl font-bold">M</span>
+                    </div>
+                    <span class="text-white text-xl font-bold logo-text">MemoryBot</span>
+                </a>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-12">
+                    <a href="/" class="nav-link text-gray-300 hover:text-white">Home</a>
+                    <a href="/gallery" class="nav-link text-gray-300 hover:text-white">Gallery</a>
+                    <a href="/upload" class="nav-link text-gray-300 hover:text-white">Upload</a>
+                    <a href="/viewer" class="nav-link text-gray-300 hover:text-white">Viewer</a>
+                    <a href="/chat" class="nav-link text-gray-300 hover:text-white">Chat</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <script src="{{ url_for('static', path='js/navbar.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

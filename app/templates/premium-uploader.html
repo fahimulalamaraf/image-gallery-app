@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}MemoryBot - Upload Photos{% endblock %}
+
+{% block extra_css %}
+<style>
+    .drop-zone {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .drop-zone.active {
+        border-color: #FF3366;
+        background: rgba(255, 51, 102, 0.1);
+    }
+
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+
+    .progress-ring__circle {
+        transition: stroke-dashoffset 0.3s;
+        transform-origin: 50% 50%;
+    }
+
+    .thumbnail {
+        transition: transform 0.3s ease;
+    }
+
+    .thumbnail:hover {
+        transform: scale(1.05);
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .uploading {
+        animation: pulse 2s infinite;
+    }
+
+    .text-white {
+        color: rgb(0 0 0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen pt-24 px-6 pb-20">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4">Upload Your Photos</h1>
+            <p class="text-gray-400 text-lg">Drag and drop your photos or click to browse</p>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="drop-zone rounded-2xl p-12 mb-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="mb-8">
+                    <svg class="w-20 h-20 mx-auto text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <div class="text-gray-400 text-lg mb-4">Drop your photos here or</div>
+                    <button class="bg-gradient-to-r from-pink-500 to-red-500 text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity">
+                        Browse Files
+                    </button>
+                    <input type="file" multiple accept="image/*" class="hidden" id="file-input">
+                </div>
+                <div class="text-gray-500 text-sm">
+                    Supported formats: JPG, PNG, HEIC • Max file size: 10MB
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div class="glass-card rounded-2xl p-8 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-white text-xl font-medium">Upload Progress</h2>
+                <div class="text-gray-400">3 of 12 files</div>
+            </div>
+            <div class="space-y-4">
+                <!-- Progress Item -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 relative">
+                        <svg class="progress-ring" width="48" height="48">
+                            <circle class="text-gray-700" stroke="currentColor" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
+                            <circle class="progress-ring__circle text-pink-500" stroke="currentColor" stroke-width="4" fill="transparent" r="20" cx="24" cy="24" style="stroke-dasharray: 125.6; stroke-dashoffset: 50"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-white">vacation-photo-1.jpg</span>
+                            <span class="text-gray-400">60%</span>
+                        </div>
+                        <div class="h-1 bg-gray-700 rounded-full">
+                            <div class="h-1 bg-gradient-to-r from-pink-500 to-red-500 rounded-full" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Uploaded Files -->
+        <div class="glass-card rounded-2xl p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-white text-xl font-medium">Uploaded Files</h2>
+                <button class="text-gray-400 hover:text-white transition-colors">
+                    Select All
+                </button>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Thumbnail -->
+                <div class="thumbnail group relative">
+                    <img src="/api/placeholder/200/200" alt="Uploaded photo" class="w-full h-40 object-cover rounded-lg">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <button class="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Drag and drop functionality
+    const dropZone = document.querySelector('.drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('active');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('active');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        // Handle file upload logic here
+        console.log('Files:', files);
+    }
+
+    // Browse button functionality
+    document.querySelector('button').addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+</script>
+{% endblock %}

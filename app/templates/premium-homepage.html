@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}MemoryBot - Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-image {
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+    }
+
+    .gradient-text {
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .feature-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    .scroll-indicator {
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-15px);
+        }
+        60% {
+            transform: translateY(-7px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="min-h-screen relative overflow-hidden pt-32">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div class="space-y-8">
+                <h1 class="text-5xl md:text-7xl font-bold text-white leading-tight">
+                    Reimagine Your <span class="gradient-text">Photo Memory</span> Experience
+                </h1>
+                <p class="text-gray-400 text-xl">
+                    Transform your photo collection with AI-powered organization, natural language search, and intelligent assistance.
+                </p>
+            </div>
+            <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-red-500 opacity-20 blur-3xl"></div>
+                <img src="/static/images/hero-image.jpg" alt="MemoryBot Interface" class="relative rounded-2xl shadow-2xl">
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 scroll-indicator">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-32">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-20">
+            <h2 class="text-4xl font-bold text-white mb-6">Powerful Features</h2>
+            <p class="text-gray-400 text-xl max-w-2xl mx-auto">
+                Experience the next generation of photo organization with our cutting-edge features.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-14 h-14 bg-gradient-to-r from-pink-500 to-red-500 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">Natural Language Search</h3>
+                <p class="text-gray-400">Find any photo instantly using conversational language. Just describe what you're looking for.</p>
+            </div>
+
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-14 h-14 bg-gradient-to-r from-pink-500 to-red-500 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">Smart Organization</h3>
+                <p class="text-gray-400">AI-powered categorization and tagging. Your photos organize themselves.</p>
+            </div>
+
+            <div class="feature-card glass-card rounded-2xl p-8">
+                <div class="w-14 h-14 bg-gradient-to-r from-pink-500 to-red-500 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">AI Assistant</h3>
+                <p class="text-gray-400">Your personal photo curator. Get insights and suggestions about your collection.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-32 relative">
+    <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-red-500 opacity-10"></div>
+    <div class="max-w-7xl mx-auto px-6 relative">
+        <div class="glass-card rounded-3xl p-20 text-center">
+            <h2 class="text-4xl font-bold text-white mb-6">Ready to Transform Your Photo Experience?</h2>
+            <p class="text-gray-400 text-xl mb-10 max-w-2xl mx-auto">
+                Join thousands of users who have already revolutionized their photo organization with MemoryBot.
+            </p>
+            <button class="bg-gradient-to-r from-pink-500 to-red-500 text-white px-10 py-4 rounded-xl font-medium hover:opacity-90 transition-opacity">
+                Get Started Now
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth scroll animation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // GSAP Animations
+    gsap.from(".hero-content", {
+        duration: 1,
+        y: 60,
+        opacity: 0,
+        ease: "power3.out",
+        stagger: 0.2
+    });
+
+    gsap.from(".feature-card", {
+        duration: 0.8,
+        y: 40,
+        opacity: 0,
+        ease: "power3.out",
+        stagger: 0.2,
+        scrollTrigger: {
+            trigger: ".feature-card",
+            start: "top 80%"
+        }
+    });
+</script>
+{% endblock %}

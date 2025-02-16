@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}MemoryBot - Image Viewer{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+    
+    body {
+        font-family: 'Space Grotesk', sans-serif;
+        background-color: #030307;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tag {
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .tag:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .thumbnail {
+        transition: all 0.3s ease;
+    }
+
+    .thumbnail:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .gradient-border {
+        position: relative;
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        padding: 1px;
+    }
+
+    .gradient-text {
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .gradient-border::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 14px; 
+        padding: 2px;
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        -webkit-mask: 
+            linear-gradient(#fff 0 0) content-box, 
+            linear-gradient(#fff 0 0);
+        mask: 
+            linear-gradient(#fff 0 0) content-box, 
+            linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }
+
+    .slider-thumb::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: linear-gradient(45deg, #FF3366, #FF6B6B);
+        border-radius: 50%;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Content -->
+<div class="min-h-screen pt-24 pb-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Main Image View -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Image Container -->
+                <div class="glass-card rounded-2xl p-4 relative group">
+                    <img src="/api/placeholder/1200/800" alt="Main image" class="w-full rounded-xl">
+                    
+                    <!-- Image Controls -->
+                    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="glass-card rounded-xl p-4 flex items-center space-x-6">
+                            <!-- Zoom Controls -->
+                            <button class="text-white hover:text-gray-300 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                </svg>
+                            </button>
+                            <input type="range" min="0" max="100" value="50" class="slider-thumb w-32 h-1 bg-gray-700 rounded-lg appearance-none">
+                            <button class="text-white hover:text-gray-300 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Details -->
+                <div class="glass-card rounded-2xl p-6 space-y-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-2">Summer Vacation 2023</h2>
+                            <p class="text-gray-400">Taken on August 15, 2023 • Venice, Italy</p>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button class="text-white hover:text-gray-300 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                </svg>
+                            </button>
+                            <button class="text-white hover:text-gray-300 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tag px-4 py-2 rounded-lg text-white text-sm">Venice</span>
+                        <span class="tag px-4 py-2 rounded-lg text-white text-sm">Architecture</span>
+                        <span class="tag px-4 py-2 rounded-lg text-white text-sm">Summer</span>
+                        <span class="tag px-4 py-2 rounded-lg text-white text-sm">Vacation</span>
+                    </div>
+
+                    <!-- AI Description -->
+                    <div>
+                        <h3 class="text-white font-semibold mb-2">AI Generated Description</h3>
+                        <p class="text-gray-400">A stunning view of the Grand Canal in Venice during sunset. The image captures the historic architecture and vibrant atmosphere of the city, with gondolas floating on the calm waters.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Similar Photos -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-white font-bold mb-4">Similar Photos</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <img src="/api/placeholder/150/150" alt="Similar photo" class="thumbnail rounded-lg w-full">
+                        <img src="/api/placeholder/150/150" alt="Similar photo" class="thumbnail rounded-lg w-full">
+                        <img src="/api/placeholder/150/150" alt="Similar photo" class="thumbnail rounded-lg w-full">
+                        <img src="/api/placeholder/150/150" alt="Similar photo" class="thumbnail rounded-lg w-full">
+                    </div>
+                </div>
+
+                <!-- Image Information -->
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <h3 class="text-white font-bold mb-4">Image Information</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Size</span>
+                            <span class="text-white">3.2 MB</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Resolution</span>
+                            <span class="text-white">4032 x 3024</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Camera</span>
+                            <span class="text-white">iPhone 13 Pro</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Location</span>
+                            <span class="text-white">Venice, Italy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // GSAP Animations
+    gsap.from(".glass-card", {
+        duration: 1,
+        y: 40,
+        opacity: 0,
+        ease: "power3.out",
+        stagger: 0.2
+    });
+</script>
+{% endblock %}

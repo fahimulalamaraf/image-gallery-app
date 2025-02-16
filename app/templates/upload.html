@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen bg-[#030307] pt-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto bg-[#0f1015]/80 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden border border-gray-800">
+        <!-- Header Section -->
+        <div class="px-8 py-6 border-b border-gray-800">
+            <h2 class="text-2xl font-semibold text-white">Upload New Memory</h2>
+            <p class="mt-1 text-sm text-gray-400">Add new photos to your collection with details</p>
+        </div>
+
+        <!-- Form Section -->
+        <form action="/upload" method="post" enctype="multipart/form-data" class="px-8 py-6 space-y-6">
+            <!-- File Upload Area -->
+            <div class="w-full">
+                <div id="upload-preview" class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-700 border-dashed rounded-xl hover:border-blue-500 transition-colors duration-200">
+                    <div class="space-y-2 text-center">
+                        <div class="flex flex-col items-center">
+                            <!-- Preview image - hidden by default -->
+                            <img id="image-preview" src="/api/placeholder/400/300" alt="Upload preview" 
+                                 class="max-w-full h-auto mb-4 rounded-lg hidden">
+                            
+                            <!-- Upload icon - shown by default -->
+                            <div id="upload-icon" class="mb-4">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                            
+                            <div class="flex text-sm text-gray-300">
+                                <label for="file-upload" class="relative cursor-pointer rounded-md font-medium text-blue-400 hover:text-blue-300 focus-within:outline-none">
+                                    <span>Upload a file</span>
+                                    <input id="file-upload" name="file" type="file" class="sr-only" accept="image/*" required>
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-400">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Column Grid for Input Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Who</label>
+                    <input type="text" name="who" 
+                           class="w-full px-4 py-2 bg-[#1a1b23] border border-gray-700 rounded-lg
+                                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                  text-black placeholder-gray-500 text-sm transition-colors duration-200">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Place</label>
+                    <input type="text" name="place" 
+                           class="w-full px-4 py-2 bg-[#1a1b23] border border-gray-700 rounded-lg 
+                                  focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                                  text-black placeholder-gray-500 text-sm transition-colors duration-200">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Event</label>
+                    <input type="text" name="event" 
+                           class="w-full px-4 py-2 bg-[#1a1b23] border border-gray-700 rounded-lg 
+                                  focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                                  text-black placeholder-gray-500 text-sm transition-colors duration-200">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-gray-300">Year</label>
+                    <input type="text" name="year" 
+                           class="w-full px-4 py-2 bg-[#1a1b23] border border-gray-700 rounded-lg 
+                                  focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                                  text-black placeholder-gray-500 text-sm transition-colors duration-200">
+                </div>
+            </div>
+
+            <!-- Description Field -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-300">Description</label>
+                <textarea name="description" rows="3" 
+                          class="w-full px-4 py-2 bg-[#1a1b23] border border-gray-700 rounded-lg 
+                                 focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                                 text-black placeholder-gray-500 text-sm transition-colors duration-200"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end">
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
+                               focus:ring-offset-[#030307] transition-all duration-200 
+                               flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span>Upload Memory</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Preview Script -->
+<script>
+    const fileInput = document.getElementById('file-upload');
+    const uploadArea = fileInput.closest('div.border-2');
+    const imagePreview = document.getElementById('image-preview');
+    const uploadIcon = document.getElementById('upload-icon');
+    
+    // File preview function
+    function showPreview(file) {
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                uploadIcon.classList.add('hidden');
+            }
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.classList.add('hidden');
+            uploadIcon.classList.remove('hidden');
+            imagePreview.src = '/api/placeholder/400/300';
+        }
+    }
+    
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('border-blue-500');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('border-blue-500');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('border-blue-500');
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            showPreview(e.dataTransfer.files[0]);
+        }
+    });
+
+    // File input change handler
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            uploadArea.classList.add('border-green-500');
+            showPreview(fileInput.files[0]);
+        } else {
+            uploadArea.classList.remove('border-green-500');
+            showPreview(null);
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ image.metadata.description or "Image Detail" }} - MemoryBot{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#030307] pt-24">
+    <div class="max-w-7xl mx-auto px-6">
+        <!-- Back Button -->
+        <a href="/gallery" class="inline-flex items-center text-gray-400 hover:text-white mb-8">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Gallery
+        </a>
+
+        <!-- Image and Info Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Image Section -->
+            <div class="relative rounded-xl overflow-hidden">
+                <img src="/images/{{ image.filename }}" 
+                     alt="{{ image.metadata.description }}"
+                     class="w-full h-auto">
+                
+                <!-- Favorite Button -->
+                <button onclick="toggleFavorite('{{ image.filename }}')" 
+                        class="absolute top-4 right-4 p-3 rounded-full bg-black/50 hover:bg-black/70 
+                               transition-colors favorite-btn"
+                        data-favorite="false">
+                    <svg class="w-6 h-6 text-white" viewBox="0 0 24 24">
+                        <!-- ... heart icon path ... -->
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Info Section -->
+            <div class="space-y-8">
+                <!-- Description -->
+                {% if image.metadata.description %}
+                <div>
+                    <h2 class="text-xl font-medium text-white mb-2">Description</h2>
+                    <p class="text-gray-300">{{ image.metadata.description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Metadata -->
+                <div class="grid grid-cols-2 gap-6">
+                    {% if image.metadata.who %}
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-400 mb-1">People</h3>
+                        <p class="text-white">{{ image.metadata.who }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if image.metadata.place %}
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-400 mb-1">Location</h3>
+                        <p class="text-white">{{ image.metadata.place }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if image.metadata.event %}
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-400 mb-1">Event</h3>
+                        <p class="text-white">{{ image.metadata.event }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if image.metadata.year %}
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-400 mb-1">Year</h3>
+                        <p class="text-white">{{ image.metadata.year }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Keywords -->
+                {% if image.metadata.keywords %}
+                <div>
+                    <h2 class="text-xl font-medium text-white mb-4">Keywords</h2>
+                    <div class="flex flex-wrap gap-2">
+                        {% for keyword in image.metadata.keywords %}
+                        <span class="px-3 py-1 bg-[#1a1b23] text-gray-300 rounded-full text-sm">
+                            {{ keyword }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Analysis -->
+                {% if image.metadata.analysis %}
+                <div>
+                    <h2 class="text-xl font-medium text-white mb-4">AI Analysis</h2>
+                    <div class="space-y-4">
+                        {% for key, value in image.metadata.analysis.items() %}
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-400 mb-1">{{ key|title }}</h3>
+                            <p class="text-white">{{ value }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
